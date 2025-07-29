@@ -89,15 +89,15 @@ expnames = [
 
 expnames_short = [
     "SOM",
-    "POM3",
-    "POM5",
+    "MCOM",
+    "MCOM",
     "FCM"
     ]
 
 expnames_long = [
     "Slab Ocean (Years 1 to 360)",
-    "Pencil Ocean, 3-level U/V Restoring (Years 101 to 499)",
-    "Pencil Ocean, 5-level U/V Restoring (Years 101 to 499)",
+    "Multi-Column Ocean, 3-level U/V Restoring (Years 101 to 499)",
+    "Multi-Column Ocean, 5-level U/V Restoring (Years 101 to 499)",
     "Fully Coupled Model (Years 1600 to 2000)"
     ]
 
@@ -200,6 +200,7 @@ for ex in range(nexps):
     plt.savefig(figname,dpi=150,bbox_inches='tight')
 
 
+
 #%% How does log ratio of stdev compare to the Fully Coupled Model?
 
 cints           = np.log(np.array([0.25, 0.5, 1, 1.25,1.5,2]))
@@ -244,7 +245,58 @@ for ex in range(3):
     
     figname = "%sTS_Ratio_withFCM_Global_%s.png" % (figpath,expnames[ex])
     plt.savefig(figname,dpi=150,bbox_inches='tight')
-    
+
+#%% 2025.07.29: Remake plots for NSF Project Report
+# Plot the more complex mode in the numerator
+
+cints           = np.log(np.array([0.25, 0.5, 0.75, 1, 1.25,1.5,1.75,2]))
+clabs           = ["0.25x","0.5x","0.75x","1x", "1.25x", "1.5x", "1.75","2x", ]
+vmax            = 1.5
+fsz_ticks       = 14
+
+# Indicate NUmerator and denominator
+inumer = 1#3
+idenom = 0#1
+
+
+numervar = stdevs[inumer].TS.data
+denomvar = stdevs[idenom].TS.data
+
+comparename_long = r"Log $\frac{\sigma(%s)}{\sigma(%s)}$" % (expnames_short[inumer],
+                                                             expnames_short[idenom])
+comparename_short = "%sto%s" % (expnames_short[inumer],
+                                                             expnames_short[idenom])
+
+fig,ax   = init_globalmap()
+
+plotvar  = np.log((numervar / denomvar))
+pcm      = ax.pcolormesh(lon,lat,plotvar,
+                      cmap='cmo.balance',vmin=-vmax,vmax=vmax,
+                      transform=cproj)
+
+# Add Ratio Plots
+cl = ax.contour(lon,lat,plotvar * dsmask180.mask,transform=cproj,
+                        levels=cints,colors="dimgray",linewidths=0.75)
+fmt= {}
+for l, s in zip(cl.levels, clabs):
+    fmt[l] = s
+cl = ax.clabel(cl,fmt=fmt,fontsize=fsz_ticks)
+viz.add_fontborder(cl)
+
+# Plot Ice
+ax.contour(plotmask.lon,plotmask.lat,plotmask,colors='cyan',
+           transform=cproj,linewidths=0.66,zorder=1,linestyles='solid')
+
+cb       = viz.hcbar(pcm,ax=ax)
+cb.set_label(comparename_long,fontsize=fsz_axis)
+ax.add_feature(cfeature.LAND,zorder=1,color="k")
+
+#ax.set_title(expnames_long[ex],fontsize=fsz_title)
+
+
+figname = "%sTS_Ratio_Global_%s.png" % (figpath,comparename_short)
+plt.savefig(figname,dpi=150,bbox_inches='tight')
+
 #%% Calculate R1
 
 
