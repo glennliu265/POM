@@ -255,8 +255,8 @@ vmax            = 1.5
 fsz_ticks       = 14
 
 # Indicate NUmerator and denominator
-inumer = 1#3
-idenom = 0#1
+inumer = 3#3#1
+idenom = 0#1#0
 
 
 numervar = stdevs[inumer].TS.data
